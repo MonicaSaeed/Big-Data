@@ -16,7 +16,7 @@ public class DifferenceReducer extends Reducer<IntWritable, Text, IntWritable, T
     	}
     	
         if(count == 1) {
-            context.write(key, new Text("Input Key: " + key.toString()));
+            context.write(key, null);
         }
     }
 }
