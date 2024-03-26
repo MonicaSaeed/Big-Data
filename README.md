@@ -2,12 +2,6 @@
 
 This README file provides instructions on running MapReduce jobs using Hadoop.
 
-## Prerequisites
-
-- Hadoop installed and configured on your system.
-
-## Usage Instructions
-
 ### Question 1.3
 
 ```
