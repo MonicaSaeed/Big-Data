@@ -24,31 +24,26 @@ unique_terms_count = 0
 unique_terms = {}
 title_counts = {}
 combined_titles = {}
+titles_to_delete = []
+
 
 # Loop over each line of data
 for line in lines:
     fields = line.split()
     
-    # Check if the line has the expected number of fields
     if len(fields) < 4:
-        continue  # Skip this line if it doesn't have enough fields
+        continue  
     
     project = fields[0]
-    title = fields[1]
-    
-    # Handle error while converting hits to integer
+    title = fields[1]    
     try:
         hits = int(fields[2])
     except ValueError:
-        print("Error converting hits to integer in line:", line)
-        continue  # Skip this line if hits cannot be converted to integer
-    
-    # Handle error while converting size to integer
+        continue  
     try:
         size = int(fields[3])
     except ValueError:
-        print("Error converting size to integer in line:", line)
-        continue  # Skip this line if size cannot be converted to integer
+        continue  
 
     # Update min and max page sizes
     min_size = min(min_size, size)
@@ -83,16 +78,18 @@ for line in lines:
         combined_titles[title].append((project, hits, size))
     else:
         combined_titles[title] = [(project, hits, size)]
+# Iterate over combined_titles to identify titles with only one associated data list
+for title, data_list in combined_titles.items():
+    if len(data_list) == 1:
+        titles_to_delete.append(title)
+
+# Remove titles with only one associated data list
+for title in titles_to_delete:
+    del combined_titles[title]
 
 # Compute average page size
 avg_size = total_size / total_count
-
-# Print results
-print("Min page size:", min_size)
-print("Max page size:", max_size)
-print("Average page size:", avg_size)
-print("English The titles count:", english_the_titles_count)
-print("Number of unique terms appearing in the page titles:", unique_terms_count)
+avg_size = round(avg_size, 4)
 
 # Write results to file
 with open("loop-results.txt", "w", encoding="utf-8") as f:
@@ -119,5 +116,5 @@ end_time = time.time()
 print("Execution time:", end_time - start_time)
 total_time_minutes = (end_time - start_time) / 60
 print("Execution time in minutes:", total_time_minutes)
-# Execution time: 61.45521545410156
-# Execution time in minutes: 1.0242535909016928
+# Execution time: 65.48570394515991
+# Execution time in minutes: 1.0914283990859985
