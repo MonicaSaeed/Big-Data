@@ -1,4 +1,5 @@
 from pyspark import SparkConf, SparkContext
+from itertools import combinations
 import re
 import time
 
@@ -45,15 +46,18 @@ for line in lines:
     except ValueError:
         continue  
 
+
     # Update min and max page sizes
     min_size = min(min_size, size)
     max_size = max(max_size, size)
     total_size += size
     total_count += 1
 
+
     # Count English titles that start with "The"
     if project != "en" and title.startswith("The"):
         english_the_titles_count += 1
+
 
     # Preprocess title
     t = title.lower()
@@ -67,12 +71,14 @@ for line in lines:
         else:
             unique_terms[term] += 1
 
+
     #Extract each title and the number of times it was repeated
     if title in title_counts:
         title_counts[title] += 1
     else:
         title_counts[title] = 1
-    
+
+
     # Combine titles
     if title in combined_titles:
         combined_titles[title].append((project, hits, size))
@@ -82,6 +88,20 @@ for line in lines:
 for title, data_list in combined_titles.items():
     if len(data_list) == 1:
         titles_to_delete.append(title)
+
+# all_pairs = []
+# # Iterate over combined_titles to generate pairs of pages with the same title
+# for title, data_list in combined_titles.items():
+#     if len(data_list) > 1:
+#         # Generate all pairwise combinations
+#         page_combinations = combinations(data_list, 2)
+#         # Append each pair to the list
+#         for pair in page_combinations:
+#             all_pairs.append((title, pair[0], pair[1]))
+# # Print or process first 15 pairs title -> (project, hits, size), (project, hits, size)
+# for pair in all_pairs[:15]:
+#     print("Title: {}, Page 1: {}, Page 2: {}".format(pair[0], pair[1], pair[2]))
+
 
 # Remove titles with only one associated data list
 for title in titles_to_delete:
@@ -108,6 +128,8 @@ with open("loop-results.txt", "w", encoding="utf-8") as f:
         f.write("{}:\n".format(title))
         for data in data_list:
             f.write("{}\n".format(data))
+    # for pair in all_pairs:
+    #     f.write("Title: {}, Page 1: {}, Page 2: {}".format(pair[0], pair[1], pair[2]))  
 
 # Stop the SparkContext
 sc2.stop()

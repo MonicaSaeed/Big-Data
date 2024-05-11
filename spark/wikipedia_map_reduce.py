@@ -1,6 +1,8 @@
 from pyspark import SparkConf, SparkContext
+from itertools import combinations
 import re
 import time
+
 
 Start_time = time.time()
 
@@ -32,8 +34,10 @@ maxSize = rdd.map(lambda x: x[3]).max()
 avgSize = rdd.map(lambda x: x[3]).mean()
 avgSize = round(avgSize, 4)
 
+
 # Count page titles that start with "The" and are not part of the English project
 english_the_titles_count = rdd.filter(lambda x: x[0] != "en" and x[1].startswith("The")).count()
+
 
 def preprocess_title(title):
     # Lowercase the title
@@ -45,11 +49,25 @@ preprocessed_titles = rdd.map(lambda x: preprocess_title(x[1]))
 terms = preprocessed_titles.flatMap(lambda title: title.split("_"))
 unique_terms_count = terms.distinct().count()
 
+
 # Extract each title and the number of times it was repeated
 title_counts = rdd.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y)
 
+
 # Combine between data of pages with the same title and save each pair of pages data in order to display them
 combined_titles = rdd.map(lambda x: (x[1], (x[0], x[2], x[3]))).groupByKey().filter(lambda x: len(x[1]) > 1).mapValues(list)
+
+# # Group pages by their title
+# grouped_pages = rdd.groupBy(lambda x: x[1])
+# # Function to generate pairwise combinations within each group
+# def generate_pairs(group):
+#     title = group[0]
+#     pages = group[1]
+#     page_combinations = combinations(pages, 2)  # Generate all pairwise combinations
+#     return [(title, pair[0], pair[1]) for pair in page_combinations]
+# # Generate pairwise combinations for each group and flatten the result
+# pairs_rdd = grouped_pages.flatMap(lambda group: generate_pairs(group))
+
 
 
 with open("map_reduce_results.txt", "w", encoding="utf-8") as f:
@@ -68,6 +86,9 @@ with open("map_reduce_results.txt", "w", encoding="utf-8") as f:
         f.write("{}:\n".format(title))
         for data in data_list:
             f.write("{}\n".format(data))
+    # for title, page1, page2 in pairs_rdd.collect():
+    #     f.write("Title: {}, Page1: {}, Page2: {}".format(title, page1, page2))
+
 
 
 sc.stop()  
@@ -78,5 +99,5 @@ total_time = end_time - Start_time
 print("Total time: ", total_time)
 total_time_minutes = total_time / 60
 print("Total time in minutes: ", total_time_minutes)
-# Total time:  212.36072254180908
-# Total time in minutes:  3.539345375696818
+# Total time:  275.6192638874054
+# Total time in minutes:  4.593654398123423
