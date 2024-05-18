@@ -32,7 +32,7 @@ rdd = lines.map(parseLine).filter(lambda x: x is not None)
 minSize = rdd.map(lambda x: x[3]).min()
 maxSize = rdd.map(lambda x: x[3]).max()
 avgSize = rdd.map(lambda x: x[3]).mean()
-avgSize = round(avgSize, 4)
+avgSize = round(avgSize, 5)
 
 
 # Count page titles that start with "The" and are not part of the English project
@@ -89,6 +89,28 @@ with open("map_reduce_results.txt", "w", encoding="utf-8") as f:
     # for title, page1, page2 in pairs_rdd.collect():
     #     f.write("Title: {}, Page1: {}, Page2: {}".format(title, page1, page2))
 
+# # Prepare the output as an RDD of strings
+# output = [
+#     f"Min page size: {minSize}",
+#     f"Max page size: {maxSize}",
+#     f"Average page size: {avgSize}",
+#     f"English The titles count: {english_the_titles_count}",
+#     f"Number of unique terms appearing in the page titles: {unique_terms_count}",
+#     "",
+#     "Title Counts:"
+# ]
+# output += [f"{title}: {count}" for title, count in title_counts.collect()]
+# output.append("")
+# output.append("Combined Titles:")
+# for title, data_list in combined_titles.collect():
+#     output.append(f"{title}:")
+#     for data in data_list:
+#         output.append(f"{data}")
+
+# output_rdd = sc.parallelize(output, 10)
+
+# # Save the output to a text file
+# output_rdd.saveAsTextFile("map_reduce_results_SaveAsTextFile")
 
 
 sc.stop()  

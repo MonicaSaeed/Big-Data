@@ -54,7 +54,7 @@ for line in lines:
     total_count += 1
 
 
-    # Count English titles that start with "The"
+    # Count English titles that start with "The" and not project "en"
     if project != "en" and title.startswith("The"):
         english_the_titles_count += 1
 
@@ -84,10 +84,15 @@ for line in lines:
         combined_titles[title].append((project, hits, size))
     else:
         combined_titles[title] = [(project, hits, size)]
+
 # Iterate over combined_titles to identify titles with only one associated data list
 for title, data_list in combined_titles.items():
     if len(data_list) == 1:
         titles_to_delete.append(title)
+
+# Remove titles with only one associated data list
+for title in titles_to_delete:
+    del combined_titles[title]
 
 # all_pairs = []
 # # Iterate over combined_titles to generate pairs of pages with the same title
@@ -103,13 +108,9 @@ for title, data_list in combined_titles.items():
 #     print("Title: {}, Page 1: {}, Page 2: {}".format(pair[0], pair[1], pair[2]))
 
 
-# Remove titles with only one associated data list
-for title in titles_to_delete:
-    del combined_titles[title]
-
 # Compute average page size
 avg_size = total_size / total_count
-avg_size = round(avg_size, 4)
+avg_size = round(avg_size, 5)
 
 # Write results to file
 with open("loop-results.txt", "w", encoding="utf-8") as f:
@@ -130,6 +131,27 @@ with open("loop-results.txt", "w", encoding="utf-8") as f:
             f.write("{}\n".format(data))
     # for pair in all_pairs:
     #     f.write("Title: {}, Page 1: {}, Page 2: {}".format(pair[0], pair[1], pair[2]))  
+
+# # Prepare the output as an RDD of strings
+# output = [
+#     f"Min page size: {min_size}",
+#     f"Max page size: {max_size}",
+#     f"Average page size: {avg_size}",
+#     f"English The titles count: {english_the_titles_count}",
+#     f"Number of unique terms appearing in the page titles: {unique_terms_count}",
+#     "",
+#     "Title Counts:"
+# ]
+# output += [f"{title}: {count}" for title, count in title_counts.items()]
+# output.append("")
+# output.append("Combined Titles:")
+# for title, data_list in combined_titles.items():
+#     output.append(f"{title}:")
+#     for data in data_list:
+#         output.append(f"{data}")
+
+# output_rdd = sc2.parallelize(output, numSlices=10)
+# output_rdd.saveAsTextFile("loop_results_SaveAsTextFile")
 
 # Stop the SparkContext
 sc2.stop()
